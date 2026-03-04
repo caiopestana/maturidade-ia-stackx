@@ -439,7 +439,7 @@ const Index = () => {
           <article key={question.id} className="bento-card p-6 sm:p-8">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <p className="section-label">PERGUNTA {index + 1}</p>
+                  <p className="section-label">P{index + 1}</p>
                   <h3 className="mt-2 text-xl font-semibold text-left font-sans">{question.prompt}</h3>
                 </div>
               </div>
@@ -464,7 +464,7 @@ const Index = () => {
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-sm font-medium font-sans">{option.label}</span>
                         <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted-foreground">
-                          {option.score}
+                          {option.score} pts
                         </span>
                       </div>
                     </button>);
@@ -483,15 +483,15 @@ const Index = () => {
   <section className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
       <aside className="panel-card p-6 sm:p-8">
         <p className="section-label">Seção final</p>
-        <h2 className="mt-3 font-display text-3xl font-bold">Pergunta aberta</h2>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        <h2 className="mt-3 text-3xl font-bold font-sans">Pergunta aberta</h2>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground font-sans">
           Compartilhe um desafio atual relacionado a IA. Essa resposta entra no PDF, mas não impacta a pontuação.
         </p>
       </aside>
 
       <div className="bento-card p-6 sm:p-8">
         <label className="flex flex-col gap-3">
-          <span className="text-sm font-semibold">Existe algum desafio atual em IA que você gostaria de resolver no seu time?</span>
+          <span className="text-sm font-semibold font-sans">Existe algum desafio atual em IA que você gostaria de resolver no seu time?</span>
           <textarea
           value={openAnswer}
           maxLength={500}
@@ -503,7 +503,7 @@ const Index = () => {
           placeholder="Opcional: descreva contexto, gargalos ou oportunidades." />
         
           <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-            <span>Opcional · até 500 caracteres</span>
+            <span className="font-sans">Opcional · até 500 caracteres</span>
             <span>{openAnswer.length}/500</span>
           </div>
           {errors.open && <span className="text-sm text-danger">{errors.open}</span>}
