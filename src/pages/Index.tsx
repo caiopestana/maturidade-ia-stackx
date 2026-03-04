@@ -49,8 +49,8 @@ const initialIntroData: IntroData = {
 const steps = ["intro", ...scoredSections.map((section) => section.id), "open"] as const;
 
 const StackXMark = () =>
-<div className="inline-flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 shadow-soft">
-    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-glow">
+<div className="inline-flex items-center gap-3 rounded-full border border-border bg-card py-2 shadow-soft mx-0 px-[16px]">
+    <div className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-glow">
       <Sparkles className="h-5 w-5" />
     </div>
     <div>
@@ -255,7 +255,7 @@ const Index = () => {
     if (screen !== "quiz") return null;
 
     return (
-      <div className="panel-card sticky top-4 z-20 p-4 sm:p-5">
+      <div className="panel-card sticky top-4 z-20 p-4 sm:p-5 bg-inherit">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <p className="section-label">Progresso global</p>
@@ -400,7 +400,7 @@ const Index = () => {
           type="checkbox"
           checked={introData.consent}
           onChange={(event) => handleIntroChange("consent", event.target.checked)}
-          className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-ring" />
+          className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-ring my-[2px]" />
         
           <span>
             Concordo com os Termos e Políticas de Privacidade.
