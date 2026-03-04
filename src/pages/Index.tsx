@@ -54,8 +54,8 @@ const StackXMark = () =>
       <Sparkles className="h-5 w-5" />
     </div>
     <div>
-      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-muted-foreground">StackX</p>
-      <p className="font-display text-lg font-bold">Diagnóstico de Maturidade em IA</p>
+      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-muted-foreground font-sans">StackX</p>
+      <p className="text-lg font-sans font-medium">Diagnóstico de Maturidade em IA</p>
     </div>
   </div>;
 
@@ -279,11 +279,11 @@ const Index = () => {
           <div className="relative space-y-6">
             <StackXMark />
             <div className="max-w-2xl space-y-4">
-              <p className="section-label">Diagnóstico estratégico</p>
-              <h1 className="text-balance font-display text-4xl font-bold leading-none sm:text-6xl">
+              <p className="section-label font-sans">Diagnóstico estratégico</p>
+              <h1 className="text-balance text-4xl leading-none sm:text-6xl font-sans font-semibold">
                 Descubra o nível de maturidade em IA da sua empresa.
               </h1>
-              <p className="max-w-xl text-base text-muted-foreground sm:text-lg">Um diagnóstico interativo com o objetivo de mapear cultura, capacitação, processos, projetos e governança com IA dentro das empresas.
+              <p className="max-w-xl text-base text-muted-foreground sm:text-lg font-sans">Um diagnóstico interativo com o objetivo de mapear cultura, capacitação, processos, projetos e governança com IA dentro das empresas.
 
             </p>
             </div>
@@ -318,7 +318,7 @@ const Index = () => {
         map((item) =>
         <article key={item.title} className="panel-card group p-6 transition-transform duration-300 hover:-translate-y-1">
               <item.icon className="mb-4 h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-110" />
-              <h2 className="mb-2 font-display text-2xl font-bold">{item.title}</h2>
+              <h2 className="mb-2 text-2xl font-bold font-sans">{item.title}</h2>
               <p className="text-sm leading-6 text-muted-foreground">{item.text}</p>
             </article>
         )}
