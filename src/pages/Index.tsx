@@ -331,7 +331,7 @@ const Index = () => {
   <section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
       <aside className="panel-card p-6 sm:p-8">
         <p className="section-label">Seção 1</p>
-        <h2 className="mt-3 font-display text-3xl font-bold">Informações iniciais</h2>
+        <h2 className="mt-3 text-3xl font-bold font-sans">Informações iniciais</h2>
         <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
           Antes do diagnóstico, precisamos de alguns dados para personalizar o relatório da StackX e gerar seu PDF final.
         </p>
@@ -344,7 +344,7 @@ const Index = () => {
         map((item) =>
         <div key={item.label} className="flex items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3 text-sm">
               <item.icon className="h-4 w-4 text-primary" />
-              <span>{item.label}</span>
+              <span className="font-sans">{item.label}</span>
             </div>
         )}
         </div>
@@ -360,7 +360,7 @@ const Index = () => {
         { key: "companyName", label: "Nome da empresa", type: "text" }].
         map((field) =>
         <label key={field.key} className={`flex flex-col gap-2 ${field.key === "companyName" ? "sm:col-span-2" : ""}`}>
-              <span className="text-sm font-semibold">{field.label}</span>
+              <span className="text-sm font-semibold font-sans">{field.label}</span>
               <input
             type={field.type}
             value={introData[field.key as keyof IntroData] as string}
@@ -374,7 +374,7 @@ const Index = () => {
         </div>
 
         <div className="mt-5">
-          <p className="mb-3 text-sm font-semibold">Número de colaboradores na empresa</p>
+          <p className="mb-3 text-sm font-semibold font-sans">Número de colaboradores na empresa</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {companySizeOptions.map((option) => {
             const selected = introData.companySize === option.value;
