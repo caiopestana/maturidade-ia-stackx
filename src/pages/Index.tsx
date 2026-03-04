@@ -418,8 +418,8 @@ const Index = () => {
       <section className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
         <aside className="panel-card p-6 sm:p-8">
           <p className="section-label">Seção {stepIndex + 1}</p>
-          <h2 className="mt-3 font-display text-3xl font-bold">{currentSection.name}</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">{currentSection.description}</p>
+          <h2 className="mt-3 text-3xl font-bold font-sans">{currentSection.name}</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground font-sans">{currentSection.description}</p>
           <div className="mt-8 space-y-4">
             {currentSection.questions.map((question, index) => {
               const isDone = answers[question.id] !== undefined;
@@ -440,7 +440,7 @@ const Index = () => {
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <p className="section-label">P{index + 1}</p>
-                  <h3 className="mt-2 text-xl font-semibold">{question.prompt}</h3>
+                  <h3 className="mt-2 text-xl font-semibold text-left font-sans">{question.prompt}</h3>
                 </div>
               </div>
 
@@ -462,7 +462,7 @@ const Index = () => {
                     }>
                     
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-medium">{option.label}</span>
+                        <span className="text-sm font-medium font-sans">{option.label}</span>
                         <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted-foreground">
                           {option.score} pts
                         </span>
