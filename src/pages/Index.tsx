@@ -55,7 +55,7 @@ const StackXMark = () =>
     </div>
     <div>
       <p className="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-muted-foreground font-sans">StackX</p>
-      <p className="text-lg font-sans font-medium">Diagnóstico de Maturidade em IA</p>
+      <p className="text-lg font-sans font-semibold">Diagnóstico de Maturidade em IA</p>
     </div>
   </div>;
 
