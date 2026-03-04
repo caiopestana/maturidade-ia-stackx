@@ -332,9 +332,9 @@ const Index = () => {
       <aside className="panel-card p-6 sm:p-8">
         <p className="section-label">Seção 1</p>
         <h2 className="mt-3 text-3xl font-bold font-sans">Informações iniciais</h2>
-        <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-          Antes do diagnóstico, precisamos de alguns dados para personalizar o relatório da StackX e gerar seu PDF final.
-        </p>
+        <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">Antes do diagnóstico, precisamos de alguns dados para te conhecer melhor para personalizar sua experiência com nosso diagnóstico de maturidade.
+
+      </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
           {[
         { icon: UserRound, label: "Nome, cargo e empresa" },
