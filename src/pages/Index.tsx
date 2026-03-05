@@ -291,7 +291,7 @@ const Index = () => {
           <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-primary/10 blur-3xl" aria-hidden />
           <div className="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-primary/10 blur-3xl" aria-hidden />
           <div className="relative space-y-6">
-            <StackXMark />
+            <StackXMark theme={theme} />
             <div className="max-w-2xl space-y-4">
               <p className="section-label font-sans">Diagnóstico estratégico</p>
               <h1 className="text-balance text-4xl leading-none sm:text-6xl font-sans font-semibold">
