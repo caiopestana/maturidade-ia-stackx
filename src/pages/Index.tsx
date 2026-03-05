@@ -266,7 +266,7 @@ const Index = () => {
     if (screen !== "quiz") return null;
 
     return (
-      <div className="panel-card sticky top-4 z-20 p-4 sm:p-5 bg-inherit opacity-100">
+      <div className="panel-card sticky top-4 z-20 p-4 sm:p-5 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 opacity-100">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <p className="section-label">Progresso global</p>
