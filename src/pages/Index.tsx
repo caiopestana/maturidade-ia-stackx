@@ -645,7 +645,7 @@ const Index = () => {
             Fale com um dos especialistas da StackX para entender a solução ideal para o momento da sua empresa.
           </p>
           <Button variant="hero" size="lg" className="mt-5" asChild>
-            <a href="https://stackx.com.br" target="_blank" rel="noreferrer">
+            <a href="https://wa.me/554799569692?text=Fiz%20meu%20diagn%C3%B3stico%20de%20maturidade%20em%20IA%20para%20minha%20empresa%2C%20e%20gostaria%20de%20saber%20como%20a%20StackX%20pode%20ajudar%20meu%20time%20a%20se%20desenvolver%20com%20IA." target="_blank" rel="noreferrer">
               Falar com especialistas <ArrowRight />
             </a>
           </Button>
