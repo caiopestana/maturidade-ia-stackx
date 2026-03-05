@@ -552,7 +552,7 @@ const Index = () => {
                 <p className="mt-2 text-base text-muted-foreground">{introData.companyName} · {introData.jobTitle}</p>
                 <p className="mt-1 text-sm text-muted-foreground">Realizado em {currentDateLabel}</p>
               </div>
-              <StackXMark />
+              <StackXMark theme={theme} />
             </div>
 
             <div className="mt-8 grid gap-4 md:grid-cols-[0.62fr_0.38fr]">
@@ -655,7 +655,7 @@ const Index = () => {
   return (
     <div className="app-shell">
       <header className="container flex items-center justify-between gap-4 py-6">
-        <StackXMark />
+        <StackXMark theme={theme} />
         <Button variant="subtle" size="icon" onClick={toggleTheme} aria-label="Alternar tema">
           {theme === "dark" ? <Sun /> : <Moon />}
         </Button>
