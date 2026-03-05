@@ -450,8 +450,7 @@ const Index = () => {
           <article key={question.id} className="bento-card p-6 sm:p-8">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <p className="section-label">P{index + 1}</p>
-                  <h3 className="mt-2 text-xl font-semibold text-left font-sans">{question.prompt}</h3>
+                  <h3 className="text-xl font-semibold text-left font-sans">{question.prompt}</h3>
                 </div>
               </div>
 
@@ -471,12 +470,8 @@ const Index = () => {
                     "border-primary bg-accent shadow-glow" :
                     "border-border bg-background hover:-translate-y-0.5 hover:border-primary/40"}`
                     }>
-                    
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
                         <span className="text-sm font-medium font-sans">{option.label}</span>
-                        <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted-foreground">
-                          {option.score} pts
-                        </span>
                       </div>
                     </button>);
 
