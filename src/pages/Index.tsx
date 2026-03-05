@@ -143,8 +143,19 @@ const Index = () => {
 
   const toggleTheme = () => setTheme((prev) => prev === "dark" ? "light" : "dark");
 
+  const formatPhoneInput = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+
+    if (digits.length === 0) return "";
+    if (digits.length <= 2) return `(${digits}`;
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
+
   const handleIntroChange = (field: keyof IntroData, value: string | boolean) => {
-    setIntroData((prev) => ({ ...prev, [field]: value }));
+    const nextValue = field === "phone" && typeof value === "string" ? formatPhoneInput(value) : value;
+    setIntroData((prev) => ({ ...prev, [field]: nextValue }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
