@@ -4,6 +4,8 @@ import jsPDF from "jspdf";
 import { Moon, RotateCcw, Sun, ArrowRight, ArrowLeft, Download, Sparkles, ShieldCheck, Building2, Mail, Phone, UserRound, BriefcaseBusiness } from "lucide-react";
 import { z } from "zod";
 
+import stackxDarkmode from "@/assets/stackx-darkmode.svg";
+import stackxWhitemode from "@/assets/stackx-whitemode.svg";
 import { Button } from "@/components/ui/button";
 import { companySizeOptions, formatScore, getMaturityBand, normalizeSectionScore, scoredSections } from "@/data/aiMaturityQuiz";
 
@@ -48,16 +50,17 @@ const initialIntroData: IntroData = {
 
 const steps = ["intro", ...scoredSections.map((section) => section.id), "open"] as const;
 
-const StackXMark = () =>
+const StackXMark = ({ theme }: { theme: ThemeMode }) =>
 <div className="inline-flex items-center gap-3 rounded-full border border-border bg-card py-2 shadow-soft mx-0 px-[16px]">
-    <div className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-glow">
-      <Sparkles className="h-5 w-5" />
-    </div>
+    <img
+      src={theme === "dark" ? stackxDarkmode : stackxWhitemode}
+      alt="Diagnóstico de Maturidade em IA"
+      className="h-10 w-10 rounded-2xl object-contain" />
     <div>
-      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-muted-foreground font-sans">StackX</p>
       <p className="text-lg font-sans font-semibold">Diagnóstico de Maturidade em IA</p>
     </div>
   </div>;
+
 
 
 const Index = () => {
