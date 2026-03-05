@@ -495,9 +495,9 @@ const Index = () => {
       <aside className="panel-card p-6 sm:p-8">
         <p className="section-label">Seção final</p>
         <h2 className="mt-3 text-3xl font-bold font-sans">Pergunta aberta</h2>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground font-sans">
-          Compartilhe um desafio atual relacionado a IA. Essa resposta entra no PDF, mas não impacta a pontuação.
-        </p>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground font-sans">Compartilhe um desafio atual relacionado a IA.
+
+      </p>
       </aside>
 
       <div className="bento-card p-6 sm:p-8">
