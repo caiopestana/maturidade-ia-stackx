@@ -215,10 +215,11 @@ const Index = () => {
 
     setErrors({});
     return true;
-  };
+  }, [currentStep, introData, openAnswer, currentSection, answers]);
 
-  const handleNext = () => {
-    if (!validateCurrentStep()) return;
+  const handleNext = async () => {
+    const valid = await validateCurrentStep();
+    if (!valid) return;
 
     if (stepIndex === steps.length - 1) {
       setCompletedAt(new Date());
