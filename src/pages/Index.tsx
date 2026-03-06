@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { Moon, RotateCcw, Sun, ArrowRight, ArrowLeft, Download, Sparkles, ShieldCheck, Building2, Mail, Phone, UserRound, BriefcaseBusiness, Globe } from "lucide-react";
 import { z } from "zod";
 
@@ -274,6 +272,7 @@ const Index = () => {
       // Yield thread to allow DOM to paint the new dimensions
       await new Promise(resolve => setTimeout(resolve, 50));
 
+      const { default: html2canvas } = await import("html2canvas");
       const canvas = await html2canvas(element, {
         scale: 2,
         backgroundColor: theme === "dark" ? "#0A0A0A" : "#F5F5F5",
@@ -289,6 +288,7 @@ const Index = () => {
       element.style.margin = originalMargin;
 
       const imageData = canvas.toDataURL("image/png");
+      const { default: jsPDF } = await import("jspdf");
       const pdf = new jsPDF({
         orientation: canvas.width > canvas.height ? "landscape" : "portrait",
         unit: "px",
