@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Moon, RotateCcw, Sun, ArrowRight, ArrowLeft, Download, Sparkles, ShieldCheck, Building2, Mail, Phone, UserRound, BriefcaseBusiness, Globe } from "lucide-react";
-import { z } from "zod";
 
 import stackxDarkmode from "@/assets/stackx-darkmode.svg";
 import stackxWhitemode from "@/assets/stackx-whitemode.svg";
@@ -28,25 +27,28 @@ const personalMailDomains = [
   "terra.com.br", "icloud.com", "me.com", "msn.com", "live.com"
 ];
 
-const introSchema = z.object({
-  fullName: z.string().trim().min(3, "Informe seu nome completo."),
-  jobTitle: z.string().trim().min(2, "Informe seu cargo."),
-  email: z.string().trim().email("Use um e-mail válido.").refine(
-    (val) => {
-      const domain = val.split('@')[1];
-      return domain && !personalMailDomains.includes(domain.toLowerCase());
-    },
-    { message: "Por favor, utilize um e-mail corporativo válido ao invés de pessoal." }
-  ),
-  phone: z.string().trim().regex(/^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/, "Informe um celular com DDD válido."),
-  companyName: z.string().trim().min(2, "Informe o nome da empresa."),
-  companySize: z.string().min(1, "Selecione o número de colaboradores."),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: "Você precisa concordar com os Termos e Políticas de Privacidade." })
-  })
-});
-
-const openQuestionSchema = z.string().max(500, "A resposta pode ter no máximo 500 caracteres.");
+const getValidationSchemas = async () => {
+  const { z } = await import("zod");
+  const introSchema = z.object({
+    fullName: z.string().trim().min(3, "Informe seu nome completo."),
+    jobTitle: z.string().trim().min(2, "Informe seu cargo."),
+    email: z.string().trim().email("Use um e-mail válido.").refine(
+      (val) => {
+        const domain = val.split('@')[1];
+        return domain && !personalMailDomains.includes(domain.toLowerCase());
+      },
+      { message: "Por favor, utilize um e-mail corporativo válido ao invés de pessoal." }
+    ),
+    phone: z.string().trim().regex(/^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/, "Informe um celular com DDD válido."),
+    companyName: z.string().trim().min(2, "Informe o nome da empresa."),
+    companySize: z.string().min(1, "Selecione o número de colaboradores."),
+    consent: z.literal(true, {
+      errorMap: () => ({ message: "Você precisa concordar com os Termos e Políticas de Privacidade." })
+    })
+  });
+  const openQuestionSchema = z.string().max(500, "A resposta pode ter no máximo 500 caracteres.");
+  return { introSchema, openQuestionSchema };
+};
 
 const initialIntroData: IntroData = {
   fullName: "",
@@ -172,8 +174,9 @@ const Index = () => {
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  const validateCurrentStep = () => {
+  const validateCurrentStep = useCallback(async () => {
     if (currentStep === "intro") {
+      const { introSchema } = await getValidationSchemas();
       const result = introSchema.safeParse(introData);
       if (!result.success) {
         const fieldErrors = result.error.flatten().fieldErrors;
@@ -189,6 +192,7 @@ const Index = () => {
     }
 
     if (currentStep === "open") {
+      const { openQuestionSchema } = await getValidationSchemas();
       const result = openQuestionSchema.safeParse(openAnswer);
       if (!result.success) {
         setErrors({ open: result.error.issues[0]?.message ?? "Resposta inválida." });
@@ -211,10 +215,11 @@ const Index = () => {
 
     setErrors({});
     return true;
-  };
+  }, [currentStep, introData, openAnswer, currentSection, answers]);
 
-  const handleNext = () => {
-    if (!validateCurrentStep()) return;
+  const handleNext = async () => {
+    const valid = await validateCurrentStep();
+    if (!valid) return;
 
     if (stepIndex === steps.length - 1) {
       setCompletedAt(new Date());
