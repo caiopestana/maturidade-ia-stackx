@@ -174,8 +174,9 @@ const Index = () => {
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  const validateCurrentStep = () => {
+  const validateCurrentStep = useCallback(async () => {
     if (currentStep === "intro") {
+      const { introSchema } = await getValidationSchemas();
       const result = introSchema.safeParse(introData);
       if (!result.success) {
         const fieldErrors = result.error.flatten().fieldErrors;
@@ -191,6 +192,7 @@ const Index = () => {
     }
 
     if (currentStep === "open") {
+      const { openQuestionSchema } = await getValidationSchemas();
       const result = openQuestionSchema.safeParse(openAnswer);
       if (!result.success) {
         setErrors({ open: result.error.issues[0]?.message ?? "Resposta inválida." });
