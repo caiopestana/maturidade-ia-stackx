@@ -27,25 +27,28 @@ const personalMailDomains = [
   "terra.com.br", "icloud.com", "me.com", "msn.com", "live.com"
 ];
 
-const introSchema = z.object({
-  fullName: z.string().trim().min(3, "Informe seu nome completo."),
-  jobTitle: z.string().trim().min(2, "Informe seu cargo."),
-  email: z.string().trim().email("Use um e-mail válido.").refine(
-    (val) => {
-      const domain = val.split('@')[1];
-      return domain && !personalMailDomains.includes(domain.toLowerCase());
-    },
-    { message: "Por favor, utilize um e-mail corporativo válido ao invés de pessoal." }
-  ),
-  phone: z.string().trim().regex(/^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/, "Informe um celular com DDD válido."),
-  companyName: z.string().trim().min(2, "Informe o nome da empresa."),
-  companySize: z.string().min(1, "Selecione o número de colaboradores."),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: "Você precisa concordar com os Termos e Políticas de Privacidade." })
-  })
-});
-
-const openQuestionSchema = z.string().max(500, "A resposta pode ter no máximo 500 caracteres.");
+const getValidationSchemas = async () => {
+  const { z } = await import("zod");
+  const introSchema = z.object({
+    fullName: z.string().trim().min(3, "Informe seu nome completo."),
+    jobTitle: z.string().trim().min(2, "Informe seu cargo."),
+    email: z.string().trim().email("Use um e-mail válido.").refine(
+      (val) => {
+        const domain = val.split('@')[1];
+        return domain && !personalMailDomains.includes(domain.toLowerCase());
+      },
+      { message: "Por favor, utilize um e-mail corporativo válido ao invés de pessoal." }
+    ),
+    phone: z.string().trim().regex(/^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/, "Informe um celular com DDD válido."),
+    companyName: z.string().trim().min(2, "Informe o nome da empresa."),
+    companySize: z.string().min(1, "Selecione o número de colaboradores."),
+    consent: z.literal(true, {
+      errorMap: () => ({ message: "Você precisa concordar com os Termos e Políticas de Privacidade." })
+    })
+  });
+  const openQuestionSchema = z.string().max(500, "A resposta pode ter no máximo 500 caracteres.");
+  return { introSchema, openQuestionSchema };
+};
 
 const initialIntroData: IntroData = {
   fullName: "",
