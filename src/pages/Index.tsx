@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { Moon, RotateCcw, Sun, ArrowRight, ArrowLeft, Download, Sparkles, ShieldCheck, Building2, Mail, Phone, UserRound, BriefcaseBusiness } from "lucide-react";
+import { Moon, RotateCcw, Sun, ArrowRight, ArrowLeft, Download, Sparkles, ShieldCheck, Building2, Mail, Phone, UserRound, BriefcaseBusiness, Globe } from "lucide-react";
 import { z } from "zod";
 
 import stackxDarkmode from "@/assets/stackx-darkmode.svg";
@@ -24,10 +24,22 @@ type IntroData = {
 
 type Answers = Record<string, number>;
 
+const personalMailDomains = [
+  "gmail.com", "yahoo.com", "yahoo.com.br", "hotmail.com", "hotmail.com.br",
+  "outlook.com", "outlook.com.br", "uol.com.br", "bol.com.br", "ig.com.br",
+  "terra.com.br", "icloud.com", "me.com", "msn.com", "live.com"
+];
+
 const introSchema = z.object({
   fullName: z.string().trim().min(3, "Informe seu nome completo."),
   jobTitle: z.string().trim().min(2, "Informe seu cargo."),
-  email: z.string().trim().email("Use um e-mail corporativo válido."),
+  email: z.string().trim().email("Use um e-mail válido.").refine(
+    (val) => {
+      const domain = val.split('@')[1];
+      return domain && !personalMailDomains.includes(domain.toLowerCase());
+    },
+    { message: "Por favor, utilize um e-mail corporativo válido ao invés de pessoal." }
+  ),
   phone: z.string().trim().regex(/^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/, "Informe um celular com DDD válido."),
   companyName: z.string().trim().min(2, "Informe o nome da empresa."),
   companySize: z.string().min(1, "Selecione o número de colaboradores."),
@@ -51,14 +63,14 @@ const initialIntroData: IntroData = {
 const steps = ["intro", ...scoredSections.map((section) => section.id), "open"] as const;
 
 const StackXMark = ({ theme }: { theme: ThemeMode }) =>
-<div className="inline-flex items-center gap-3 rounded-full border border-border bg-card py-2 shadow-soft mx-0 px-[16px]">
+  <div className="inline-flex items-center rounded-full border border-border bg-card py-2 px-4 shadow-soft">
     <img
       src={theme === "dark" ? stackxDarkmode : stackxWhitemode}
       alt="Diagnóstico de Maturidade em IA"
-      className="h-10 w-10 rounded-2xl object-contain" />
-    <div>
-      <p className="text-lg font-sans font-semibold">Diagnóstico de Maturidade em IA</p>
-    </div>
+      width={36}
+      height={36}
+      className="h-9 w-9 object-contain mr-3" />
+    <span className="text-sm sm:text-base font-sans font-semibold whitespace-nowrap">Diagnóstico de Maturidade em IA</span>
   </div>;
 
 
@@ -89,13 +101,13 @@ const Index = () => {
 
   const answeredRequiredCount = useMemo(() => {
     const introCount = [
-    introData.fullName,
-    introData.jobTitle,
-    introData.email,
-    introData.phone,
-    introData.companyName,
-    introData.companySize].
-    filter(Boolean).length + (introData.consent ? 1 : 0);
+      introData.fullName,
+      introData.jobTitle,
+      introData.email,
+      introData.phone,
+      introData.companyName,
+      introData.companySize].
+      filter(Boolean).length + (introData.consent ? 1 : 0);
 
     return introCount + Object.keys(answers).length;
   }, [answers, introData]);
@@ -105,16 +117,16 @@ const Index = () => {
 
   const sectionScores = useMemo(
     () =>
-    scoredSections.map((section) => {
-      const rawScore = section.questions.reduce((sum, question) => sum + (answers[question.id] ?? 0), 0);
-      const score = normalizeSectionScore(rawScore);
-      return {
-        ...section,
-        rawScore,
-        score,
-        band: getMaturityBand(score)
-      };
-    }),
+      scoredSections.map((section) => {
+        const rawScore = section.questions.reduce((sum, question) => sum + (answers[question.id] ?? 0), 0);
+        const score = normalizeSectionScore(rawScore);
+        return {
+          ...section,
+          rawScore,
+          score,
+          band: getMaturityBand(score)
+        };
+      }),
     [answers]
   );
 
@@ -129,11 +141,11 @@ const Index = () => {
 
   const currentDateLabel = useMemo(
     () =>
-    (completedAt ?? new Date()).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric"
-    }),
+      (completedAt ?? new Date()).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      }),
     [completedAt]
   );
 
@@ -245,11 +257,36 @@ const Index = () => {
 
     setIsGeneratingPdf(true);
     try {
-      const canvas = await html2canvas(reportRef.current, {
+      const element = reportRef.current;
+
+      // Save original styles
+      const originalStyle = element.getAttribute("style") || "";
+      const originalWidth = element.style.width;
+      const originalMaxWidth = element.style.maxWidth;
+      const originalMargin = element.style.margin;
+
+      // Temporarily fix dimensions to forces desktop layout for the PDF
+      // so responsive classes don't mess up when html2canvas captures
+      element.style.width = "1200px";
+      element.style.maxWidth = "1200px";
+      element.style.margin = "0";
+
+      // Yield thread to allow DOM to paint the new dimensions
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const canvas = await html2canvas(element, {
         scale: 2,
         backgroundColor: theme === "dark" ? "#0A0A0A" : "#F5F5F5",
-        useCORS: true
+        useCORS: true,
+        windowWidth: 1200,
+        width: 1200
       });
+
+      // Restore original styles immediately after capture
+      element.setAttribute("style", originalStyle);
+      element.style.width = originalWidth;
+      element.style.maxWidth = originalMaxWidth;
+      element.style.margin = originalMargin;
 
       const imageData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
@@ -285,9 +322,9 @@ const Index = () => {
   };
 
   const renderIntro = () =>
-  <main className="container py-8 sm:py-12">
-      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch">
-        <div className="bento-card bg-hero-gradient relative overflow-hidden p-8 sm:p-10">
+    <main className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-20 flex flex-col justify-center min-h-[85vh]">
+      <section className="grid gap-6 md:gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch lg:gap-12">
+        <div className="bento-card bg-hero-gradient relative flex flex-col justify-center overflow-hidden p-6 sm:p-10 lg:p-14">
           <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-primary/10 blur-3xl" aria-hidden />
           <div className="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-primary/10 blur-3xl" aria-hidden />
           <div className="relative space-y-6">
@@ -299,123 +336,124 @@ const Index = () => {
               </h1>
               <p className="max-w-xl text-base text-muted-foreground sm:text-lg font-sans">Um diagnóstico interativo com o objetivo de mapear cultura, capacitação, processos, projetos e governança com IA dentro das empresas.
 
-            </p>
+              </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Button variant="hero" size="lg" onClick={startQuiz}>
+            <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4 sm:gap-6 pt-2">
+              <Button variant="hero" size="lg" onClick={startQuiz} className="w-full sm:w-auto">
                 Iniciar diagnóstico <ArrowRight />
               </Button>
-              
-
-            
+              <Button variant="subtle" size="lg" asChild className="w-full sm:w-auto bg-transparent border-transparent shadow-none">
+                <a href="https://www.stackx.com.br" target="_blank" rel="noreferrer">
+                  <Globe className="mr-2 h-4 w-4" /> Voltar para o site
+                </a>
+              </Button>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1 lg:gap-8">
           {[
-        {
-          icon: ShieldCheck,
-          title: "5 pilares avaliados",
-          text: "Cultura, capacitação, ferramentas, projetos e governança em uma leitura clara de 0 a 5."
-        },
-        {
-          icon: Building2,
-          title: "Visão para liderança",
-          text: "Ideal para founders, RH, tecnologia e gestores que precisam decidir próximos passos com evidência."
-        },
-        {
-          icon: Sparkles,
-          title: "Resultado acionável",
-          text: "Receba um retrato imediato do momento atual e onde concentrar os esforços do time."
-        }].
-        map((item) =>
-        <article key={item.title} className="panel-card group p-6 transition-transform duration-300 hover:-translate-y-1">
-              <item.icon className="mb-4 h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-110" />
-              <h2 className="mb-2 text-2xl font-bold font-sans">{item.title}</h2>
-              <p className="text-sm leading-6 text-muted-foreground">{item.text}</p>
-            </article>
-        )}
+            {
+              icon: ShieldCheck,
+              title: "5 pilares avaliados",
+              text: "Cultura, capacitação, ferramentas, projetos e governança em uma leitura clara de 0 a 5."
+            },
+            {
+              icon: Building2,
+              title: "Visão para liderança",
+              text: "Ideal para founders, RH, tecnologia e gestores que precisam decidir próximos passos com evidência."
+            },
+            {
+              icon: Sparkles,
+              title: "Resultado acionável",
+              text: "Receba um retrato imediato do momento atual e onde concentrar os esforços do time."
+            }].
+            map((item) =>
+              <article key={item.title} className="panel-card group p-6 sm:p-8 transition-transform duration-300 hover:-translate-y-1">
+                <item.icon className="mb-4 h-8 w-8 text-primary transition-transform duration-300 group-hover:scale-110" />
+                <h2 className="mb-2 text-2xl font-bold font-sans">{item.title}</h2>
+                <p className="text-sm leading-6 text-muted-foreground">{item.text}</p>
+              </article>
+            )}
         </div>
       </section>
     </main>;
 
 
   const renderInfoStep = () =>
-  <section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-      <aside className="panel-card p-6 sm:p-8">
+    <section className="grid gap-6 md:gap-8 lg:grid-cols-[0.8fr_1.2fr] xl:gap-16">
+      <aside className="panel-card p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
         <p className="section-label">Seção 1</p>
-        <h2 className="mt-3 text-3xl font-bold font-sans">Informações iniciais</h2>
-        <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">Antes do diagnóstico, precisamos de alguns dados para te conhecer melhor para personalizar sua experiência com nosso diagnóstico de maturidade.
+        <h2 className="mt-4 text-3xl font-bold font-sans">Informações iniciais</h2>
+        <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">Antes do diagnóstico, precisamos de alguns dados para te conhecer melhor para personalizar sua experiência com nosso diagnóstico de maturidade.
 
-      </p>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+        </p>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
           {[
-        { icon: UserRound, label: "Nome, cargo e empresa" },
-        { icon: Mail, label: "E-mail corporativo validado" },
-        { icon: Phone, label: "Celular com DDD" },
-        { icon: BriefcaseBusiness, label: "Porte da organização" }].
-        map((item) =>
-        <div key={item.label} className="flex items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3 text-sm">
-              <item.icon className="h-4 w-4 text-primary" />
-              <span className="font-sans">{item.label}</span>
-            </div>
-        )}
+            { icon: UserRound, label: "Nome, cargo e empresa" },
+            { icon: Mail, label: "E-mail corporativo validado" },
+            { icon: Phone, label: "Celular com DDD" },
+            { icon: BriefcaseBusiness, label: "Porte da organização" }].
+            map((item) =>
+              <div key={item.label} className="flex items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3 text-sm">
+                <item.icon className="h-4 w-4 text-primary" />
+                <span className="font-sans">{item.label}</span>
+              </div>
+            )}
         </div>
       </aside>
 
-      <div className="bento-card p-6 sm:p-8">
-        <div className="grid gap-4 sm:grid-cols-2">
+      <div className="bento-card p-6 sm:p-8 lg:p-10">
+        <div className="grid gap-6 sm:grid-cols-2">
           {[
-        { key: "fullName", label: "Nome completo", type: "text" },
-        { key: "jobTitle", label: "Cargo", type: "text" },
-        { key: "email", label: "E-mail corporativo", type: "email" },
-        { key: "phone", label: "Celular com DDD", type: "tel" },
-        { key: "companyName", label: "Nome da empresa", type: "text" }].
-        map((field) =>
-        <label key={field.key} className={`flex flex-col gap-2 ${field.key === "companyName" ? "sm:col-span-2" : ""}`}>
-              <span className="text-sm font-semibold font-sans">{field.label}</span>
-              <input
-            type={field.type}
-            value={introData[field.key as keyof IntroData] as string}
-            onChange={(event) => handleIntroChange(field.key as keyof IntroData, event.target.value)}
-            className="h-12 rounded-2xl border border-input bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/20"
-            placeholder={field.label} />
-          
-              {errors[field.key] && <span className="text-sm text-danger">{errors[field.key]}</span>}
-            </label>
-        )}
+            { key: "fullName", label: "Nome completo", type: "text" },
+            { key: "jobTitle", label: "Cargo", type: "text" },
+            { key: "email", label: "E-mail corporativo", type: "email" },
+            { key: "phone", label: "Celular com DDD", type: "tel" },
+            { key: "companyName", label: "Nome da empresa", type: "text" }].
+            map((field) =>
+              <label key={field.key} className={`flex flex-col gap-2 ${field.key === "companyName" ? "sm:col-span-2" : ""}`}>
+                <span className="text-sm font-semibold font-sans">{field.label}</span>
+                <input
+                  type={field.type}
+                  value={introData[field.key as keyof IntroData] as string}
+                  onChange={(event) => handleIntroChange(field.key as keyof IntroData, event.target.value)}
+                  className="h-12 rounded-2xl border border-input bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/20"
+                  placeholder={field.label} />
+
+                {errors[field.key] && <span className="text-sm text-danger">{errors[field.key]}</span>}
+              </label>
+            )}
         </div>
 
-        <div className="mt-5">
-          <p className="mb-3 text-sm font-semibold font-sans">Número de colaboradores na empresa</p>
-          <div className="grid gap-3 sm:grid-cols-2">
+        <div className="mt-8">
+          <p className="mb-4 text-sm font-semibold font-sans">Número de colaboradores na empresa</p>
+          <div className="grid gap-4 sm:grid-cols-2">
             {companySizeOptions.map((option) => {
-            const selected = introData.companySize === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleIntroChange("companySize", option.value)}
-                className={`rounded-2xl border px-4 py-3 text-left text-sm transition-all duration-300 ${
-                selected ? "border-primary bg-accent shadow-glow" : "border-border bg-card hover:border-primary/40"}`
-                }>
-                
+              const selected = introData.companySize === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleIntroChange("companySize", option.value)}
+                  className={`rounded-2xl border px-4 py-3 text-left text-sm transition-all duration-300 ${selected ? "border-primary bg-accent shadow-glow" : "border-border bg-card hover:border-primary/40"}`
+                  }>
+
                   {option.label}
                 </button>);
 
-          })}
+            })}
           </div>
           {errors.companySize && <span className="mt-2 block text-sm text-danger">{errors.companySize}</span>}
         </div>
 
         <label className="mt-6 flex items-start gap-3 rounded-2xl border border-border bg-panel p-4 text-sm">
           <input
-          type="checkbox"
-          checked={introData.consent}
-          onChange={(event) => handleIntroChange("consent", event.target.checked)}
-          className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-ring my-[2px]" />
-        
+            type="checkbox"
+            checked={introData.consent}
+            onChange={(event) => handleIntroChange("consent", event.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-ring my-[2px]" />
+
           <span>
             Concordo com os Termos e Políticas de Privacidade.
             {errors.consent && <span className="mt-1 block text-danger">{errors.consent}</span>}
@@ -429,28 +467,16 @@ const Index = () => {
     if (!currentSection) return null;
 
     return (
-      <section className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
-        <aside className="panel-card p-6 sm:p-8">
+      <section className="grid gap-6 md:gap-8 lg:grid-cols-[0.8fr_1.2fr] xl:gap-16">
+        <aside className="panel-card p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
           <p className="section-label">Seção {stepIndex + 1}</p>
-          <h2 className="mt-3 text-3xl font-bold font-sans">{currentSection.name}</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground font-sans">{currentSection.description}</p>
-          <div className="mt-8 space-y-4">
-            {currentSection.questions.map((question, index) => {
-              const isDone = answers[question.id] !== undefined;
-              return (
-                <div key={question.id} className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Pergunta {index + 1}</p>
-                  <p className="mt-2 text-sm font-medium">{question.prompt}</p>
-                  <p className="mt-3 text-xs text-muted-foreground">{isDone ? "Respondida" : "Aguardando resposta"}</p>
-                </div>);
-
-            })}
-          </div>
+          <h2 className="mt-4 text-3xl font-bold font-sans">{currentSection.name}</h2>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground font-sans">{currentSection.description}</p>
         </aside>
 
-        <div className="grid gap-4">
+        <div className="grid gap-6 md:gap-8">
           {currentSection.questions.map((question, index) =>
-          <article key={question.id} className="bento-card p-6 sm:p-8">
+            <article key={question.id} className="bento-card p-6 sm:p-8 lg:p-10">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-semibold text-left font-sans">{question.prompt}</h3>
@@ -459,26 +485,25 @@ const Index = () => {
 
               <div className="grid gap-3">
                 {question.options.map((option) => {
-                const selected = answers[question.id] === option.score;
-                return (
-                  <button
-                    key={`${question.id}-${option.label}`}
-                    type="button"
-                    onClick={() => {
-                      setAnswers((prev) => ({ ...prev, [question.id]: option.score }));
-                      setErrors((prev) => ({ ...prev, [currentSection.id]: "" }));
-                    }}
-                    className={`rounded-2xl border px-4 py-4 text-left transition-all duration-300 ${
-                    selected ?
-                    "border-primary bg-accent shadow-glow" :
-                    "border-border bg-background hover:-translate-y-0.5 hover:border-primary/40"}`
-                    }>
+                  const selected = answers[question.id] === option.score;
+                  return (
+                    <button
+                      key={`${question.id}-${option.label}`}
+                      type="button"
+                      onClick={() => {
+                        setAnswers((prev) => ({ ...prev, [question.id]: option.score }));
+                        setErrors((prev) => ({ ...prev, [currentSection.id]: "" }));
+                      }}
+                      className={`rounded-2xl border px-4 py-4 text-left transition-all duration-300 ${selected ?
+                        "border-primary bg-accent shadow-glow" :
+                        "border-border bg-background hover:-translate-y-0.5 hover:border-primary/40"}`
+                      }>
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-medium font-sans">{option.label}</span>
                       </div>
                     </button>);
 
-              })}
+                })}
               </div>
             </article>
           )}
@@ -489,28 +514,28 @@ const Index = () => {
   };
 
   const renderOpenStep = () =>
-  <section className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
-      <aside className="panel-card p-6 sm:p-8">
+    <section className="grid gap-6 md:gap-8 lg:grid-cols-[0.8fr_1.2fr] xl:gap-16">
+      <aside className="panel-card p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
         <p className="section-label">Seção final</p>
-        <h2 className="mt-3 text-3xl font-bold font-sans">Pergunta aberta</h2>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground font-sans">Compartilhe um desafio atual relacionado a IA.
+        <h2 className="mt-4 text-3xl font-bold font-sans">Pergunta aberta</h2>
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground font-sans">Compartilhe um desafio atual relacionado a IA.
 
-      </p>
+        </p>
       </aside>
 
-      <div className="bento-card p-6 sm:p-8">
-        <label className="flex flex-col gap-3">
+      <div className="bento-card p-6 sm:p-8 lg:p-10 flex flex-col justify-center">
+        <label className="flex flex-col gap-4">
           <span className="text-sm font-semibold font-sans">Existe algum desafio atual em IA que você gostaria de resolver no seu time?</span>
           <textarea
-          value={openAnswer}
-          maxLength={500}
-          onChange={(event) => {
-            setOpenAnswer(event.target.value);
-            setErrors((prev) => ({ ...prev, open: "" }));
-          }}
-          className="min-h-[220px] rounded-[1.5rem] border border-input bg-background p-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/20"
-          placeholder="Opcional: descreva contexto, gargalos ou oportunidades." />
-        
+            value={openAnswer}
+            maxLength={500}
+            onChange={(event) => {
+              setOpenAnswer(event.target.value);
+              setErrors((prev) => ({ ...prev, open: "" }));
+            }}
+            className="min-h-[220px] rounded-[1.5rem] border border-input bg-background p-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/20"
+            placeholder="Opcional: descreva contexto, gargalos ou oportunidades." />
+
           <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
             <span className="font-sans">Opcional · até 500 caracteres</span>
             <span>{openAnswer.length}/500</span>
@@ -522,8 +547,8 @@ const Index = () => {
 
 
   const renderQuiz = () =>
-  <main className="container py-6 sm:py-8">
-      <div className="space-y-6">
+    <main className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <div className="space-y-8 sm:space-y-12">
         {renderProgressHeader()}
         {currentStep === "intro" && renderInfoStep()}
         {currentSection && renderScoredStep()}
@@ -541,34 +566,43 @@ const Index = () => {
 
 
   const renderResults = () =>
-  <main className="container py-8 sm:py-10">
-      <div className="space-y-6" ref={reportRef}>
-        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="bento-card p-8 sm:p-10">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="section-label">Resultado final</p>
-                <h1 className="mt-3 font-display text-4xl font-bold sm:text-5xl">{introData.fullName}</h1>
-                <p className="mt-2 text-base text-muted-foreground">{introData.companyName} · {introData.jobTitle}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Realizado em {currentDateLabel}</p>
+    <main className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <div className="space-y-8 lg:space-y-12" ref={reportRef}>
+        <section className="grid gap-8">
+          <div className="bento-card p-6 sm:p-10 lg:p-14">
+            <div className="flex flex-row justify-between items-start gap-5 border-b border-border pb-8">
+              <div className="flex flex-col gap-1">
+                <p className="section-label">Diagnóstico de Maturidade em IA</p>
+                <div className="h-1 w-12 rounded-full bg-primary mt-1" />
               </div>
-              <StackXMark theme={theme} />
+              <img
+                src={theme === "dark" ? stackxDarkmode : stackxWhitemode}
+                alt="StackX"
+                className="h-10 w-10 sm:h-12 sm:w-12 object-contain"
+              />
             </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-[0.62fr_0.38fr]">
-              <div className="panel-card p-6">
+            <div className="pt-6">
+              <p className="section-label text-muted-foreground/60">Resultado final</p>
+              <h1 className="mt-3 mb-4 font-display text-4xl sm:text-5xl font-bold leading-normal pt-1 pb-1 break-words">{introData.fullName}</h1>
+              <p className="text-base text-muted-foreground">{introData.companyName} · {introData.jobTitle}</p>
+              <p className="mt-1 text-sm text-muted-foreground">Realizado em {currentDateLabel}</p>
+            </div>
+
+            <div className="mt-12 grid gap-6 md:grid-cols-[0.6fr_0.4fr] lg:gap-8">
+              <div className="panel-card p-8 lg:p-10">
                 <p className="section-label">Pontuação geral</p>
-                <div className="mt-3 flex items-end gap-3">
-                  <span className="font-display text-6xl font-bold leading-none">{formatScore(overallScore)}</span>
-                  <span className="pb-2 text-lg text-muted-foreground">/ 5</span>
+                <div className="mt-6 flex items-end gap-3">
+                  <span className="font-display text-7xl font-bold leading-none">{formatScore(overallScore)}</span>
+                  <span className="pb-3 text-xl text-muted-foreground">/ 5</span>
                 </div>
-                <p className={`mt-3 text-lg font-semibold tone-${overallBand.tone}`}>
+                <p className={`mt-5 text-xl font-bold tone-${overallBand.tone}`}>
                   {overallBand.emoji} {overallBand.label}
                 </p>
-                <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground">{resultNarrative}</p>
+                <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground">{resultNarrative}</p>
               </div>
 
-              <div className="panel-card p-6">
+              <div className="panel-card p-8 lg:p-10 flex flex-col justify-center">
                 <p className="section-label">Leitura rápida</p>
                 <div className="mt-4 space-y-3 text-sm text-muted-foreground">
                   <p>• {overallBand.description}</p>
@@ -579,34 +613,24 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
+          {openAnswer &&
             <div className="panel-card p-6">
-              <p className="section-label">Contato</p>
-              <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-                <p>{introData.email}</p>
-                <p>{introData.phone}</p>
-                <p>{companySizeOptions.find((option) => option.value === introData.companySize)?.label}</p>
-              </div>
+              <p className="section-label">Desafio atual</p>
+              <p className="mt-4 text-sm leading-6 text-muted-foreground">{openAnswer}</p>
             </div>
-            {openAnswer &&
-          <div className="panel-card p-6">
-                <p className="section-label">Desafio atual</p>
-                <p className="mt-4 text-sm leading-6 text-muted-foreground">{openAnswer}</p>
-              </div>
           }
-          </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className="flex flex-wrap gap-6 lg:gap-8">
           {sectionScores.map((section) =>
-        <article key={section.id} className="bento-card p-6">
+            <article key={section.id} className="bento-card p-6 sm:p-8 flex-1 min-w-[300px] lg:min-w-[340px]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="section-label">Pilar avaliado</p>
                   <h2 className="mt-2 text-2xl font-semibold">{section.name}</h2>
                 </div>
-                <div className="rounded-2xl border border-border bg-background px-3 py-2 text-sm font-semibold">
-                  {formatScore(section.score)} / 5
+                <div className="text-lg font-bold whitespace-nowrap">
+                  {formatScore(section.score)}<span className="text-xs font-semibold text-muted-foreground ml-1">/ 5</span>
                 </div>
               </div>
               <div className="mt-5 score-bar">
@@ -617,29 +641,34 @@ const Index = () => {
               </p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{section.band.description}</p>
             </article>
-        )}
+          )}
         </section>
-      </div>
+      </div >
 
-      <section className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="panel-card p-6 sm:p-8">
+      <section className="mt-12 grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
+        <div className="panel-card p-8 sm:p-12 flex flex-col justify-center">
           <p className="section-label">Ações</p>
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Button variant="hero" size="lg" onClick={exportPdf} disabled={isGeneratingPdf}>
               <Download /> {isGeneratingPdf ? "Gerando PDF..." : "Baixar meu diagnóstico em PDF"}
             </Button>
             <Button variant="subtle" size="lg" onClick={restartQuiz}>
               <RotateCcw /> Refazer o diagnóstico
             </Button>
+            <Button variant="subtle" size="lg" asChild>
+              <a href="https://www.stackx.com.br" target="_blank" rel="noreferrer">
+                <Globe /> Voltar para o site
+              </a>
+            </Button>
           </div>
         </div>
 
-        <div className="bento-card p-6 sm:p-8">
+        <div className="bento-card p-6 sm:p-10 lg:p-12">
           <p className="section-label">Próximo passo</p>
-          <h2 className="mt-3 max-w-2xl font-display text-3xl font-bold text-balance">
+          <h2 className="mt-5 max-w-2xl font-display text-4xl font-bold text-balance">
             Quer dar o próximo passo no desenvolvimento do seu time em IA?
           </h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
             Fale com um dos especialistas da StackX para entender a solução ideal para o momento da sua empresa.
           </p>
           <Button variant="hero" size="lg" className="mt-5" asChild>
@@ -649,12 +678,12 @@ const Index = () => {
           </Button>
         </div>
       </section>
-    </main>;
+    </main >;
 
 
   return (
     <div className="app-shell">
-      <header className="container flex items-center justify-between gap-4 py-6">
+      <header className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-row items-center justify-between gap-4 py-6 sm:py-8">
         <StackXMark theme={theme} />
         <Button variant="subtle" size="icon" onClick={toggleTheme} aria-label="Alternar tema">
           {theme === "dark" ? <Sun /> : <Moon />}
