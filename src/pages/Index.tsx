@@ -240,7 +240,7 @@ const Index = () => {
         section_scores: scores as any,
         overall_score: overall,
         overall_band: band.label,
-        completed_at: completedDate.toISOString(),
+        completed_at: completedDate.toISOString()
       });
     } catch (e) {
       console.error("Failed to save quiz response:", e);
@@ -640,7 +640,8 @@ const Index = () => {
               </div>
 
               <div className="panel-card p-8 lg:p-10 flex flex-col justify-center">
-                <p className="section-label">Leitura rápida</p>
+                <p className="section-label">
+</p>
                 <div className="mt-4 space-y-3 text-sm text-muted-foreground">
                   <p>• {overallBand.description}</p>
                   <p>• O relatório detalha os 5 pilares pontuados em escala normalizada.</p>
@@ -650,8 +651,7 @@ const Index = () => {
             </div>
           </div>
 
-          {openAnswer &&
-        <div className="panel-card p-6">
+          {openAnswer && <div className="panel-card p-6">
               <p className="section-label">Desafio atual</p>
               <p className="mt-4 text-sm leading-6 text-muted-foreground">{openAnswer}</p>
             </div>
