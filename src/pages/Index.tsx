@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Moon, RotateCcw, Sun, ArrowRight, ArrowLeft, Download, Sparkles, ShieldCheck, Building2, Mail, Phone, UserRound, BriefcaseBusiness, Globe } from "lucide-react";
 
 import stackxDarkmode from "@/assets/stackx-darkmode.svg";
