@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Moon, RotateCcw, Sun, ArrowRight, ArrowLeft, Download, Sparkles, ShieldCheck, Building2, Mail, Phone, UserRound, BriefcaseBusiness, Globe } from "lucide-react";
 
 import stackxDarkmode from "@/assets/stackx-darkmode.svg";
@@ -217,13 +218,44 @@ const Index = () => {
     return true;
   }, [currentStep, introData, openAnswer, currentSection, answers]);
 
+  const saveToSupabase = useCallback(async (completedDate: Date) => {
+    try {
+      const scores = scoredSections.map((section) => {
+        const rawScore = section.questions.reduce((sum, q) => sum + (answers[q.id] ?? 0), 0);
+        const score = normalizeSectionScore(rawScore);
+        return { id: section.id, name: section.name, rawScore, score };
+      });
+      const overall = Number((scores.reduce((s, sec) => s + sec.score, 0) / scores.length).toFixed(1));
+      const band = getMaturityBand(overall);
+
+      await supabase.from("quiz_responses").insert({
+        full_name: introData.fullName,
+        job_title: introData.jobTitle,
+        email: introData.email,
+        phone: introData.phone,
+        company_name: introData.companyName,
+        company_size: introData.companySize,
+        answers: answers as any,
+        open_answer: openAnswer,
+        section_scores: scores as any,
+        overall_score: overall,
+        overall_band: band.label,
+        completed_at: completedDate.toISOString(),
+      });
+    } catch (e) {
+      console.error("Failed to save quiz response:", e);
+    }
+  }, [answers, introData, openAnswer]);
+
   const handleNext = async () => {
     const valid = await validateCurrentStep();
     if (!valid) return;
 
     if (stepIndex === steps.length - 1) {
-      setCompletedAt(new Date());
+      const now = new Date();
+      setCompletedAt(now);
       setScreen("results");
+      saveToSupabase(now);
       return;
     }
 
