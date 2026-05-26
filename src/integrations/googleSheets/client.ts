@@ -14,7 +14,7 @@ export interface GoogleSheetsResponse {
   status: 'sucesso' | string;
 }
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-UErzSLkngDpfsjMtRMoW2nhm5_SBHpZMTLyYnKxOZ077Y_JOQSOuA81YnIsgibV3Lg/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPwdTb2OSy9mZN8rt18heHAnKjOQu7TMst5uoKR7TTMuPAxar7XP1OtqTeGukqqSopPQ/exec";
 
 export async function submitToGoogleSheets(data: GoogleSheetsPayload): Promise<GoogleSheetsResponse> {
   const response = await fetch(GOOGLE_SCRIPT_URL, {
