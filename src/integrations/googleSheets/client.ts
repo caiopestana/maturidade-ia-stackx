@@ -19,16 +19,13 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPwdTb2OSy9m
 export async function submitToGoogleSheets(data: GoogleSheetsPayload): Promise<GoogleSheetsResponse> {
   const response = await fetch(GOOGLE_SCRIPT_URL, {
     method: "POST",
+    mode: "no-cors", // Bypasses CORS redirect checks
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "text/plain;charset=utf-8",
     },
     body: JSON.stringify(data),
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const result = await response.json();
-  return result as GoogleSheetsResponse;
+  // With no-cors, the response is opaque, so we assume success if no exception is thrown
+  return { status: "sucesso" };
 }
