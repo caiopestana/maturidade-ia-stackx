@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { submitToGoogleSheets } from "@/integrations/googleSheets/client";
 import { Moon, RotateCcw, Sun, ArrowRight, ArrowLeft, Download, Sparkles, ShieldCheck, Building2, Mail, Phone, UserRound, BriefcaseBusiness, Globe } from "lucide-react";
 
 import stackxDarkmode from "@/assets/stackx-darkmode.svg";
@@ -218,7 +218,7 @@ const Index = () => {
     return true;
   }, [currentStep, introData, openAnswer, currentSection, answers]);
 
-  const saveToSupabase = useCallback(async (completedDate: Date) => {
+  const saveToGoogleSheets = useCallback(async () => {
     try {
       const scores = scoredSections.map((section) => {
         const rawScore = section.questions.reduce((sum, q) => sum + (answers[q.id] ?? 0), 0);
@@ -228,22 +228,19 @@ const Index = () => {
       const overall = Number((scores.reduce((s, sec) => s + sec.score, 0) / scores.length).toFixed(1));
       const band = getMaturityBand(overall);
 
-      await supabase.from("quiz_responses").insert({
-        full_name: introData.fullName,
-        job_title: introData.jobTitle,
+      await submitToGoogleSheets({
+        nome_completo: introData.fullName,
+        cargo: introData.jobTitle,
         email: introData.email,
-        phone: introData.phone,
-        company_name: introData.companyName,
-        company_size: introData.companySize,
-        answers: answers as any,
-        open_answer: openAnswer,
-        section_scores: scores as any,
-        overall_score: overall,
-        overall_band: band.label,
-        completed_at: completedDate.toISOString()
+        telefone: introData.phone,
+        empresa: introData.companyName,
+        tamanho_da_empresa: introData.companySize,
+        pergunta_aberta: openAnswer,
+        pontuacao_geral: overall,
+        faixa_geral: band.label
       });
     } catch (e) {
-      console.error("Failed to save quiz response:", e);
+      console.error("Failed to save quiz response to Google Sheets:", e);
     }
   }, [answers, introData, openAnswer]);
 
@@ -255,7 +252,7 @@ const Index = () => {
       const now = new Date();
       setCompletedAt(now);
       setScreen("results");
-      saveToSupabase(now);
+      saveToGoogleSheets();
       return;
     }
 
